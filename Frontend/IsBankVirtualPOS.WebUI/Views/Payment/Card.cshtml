@@ -1,0 +1,841 @@
+﻿@model StartPaymentDTO
+@{
+    Layout = null;
+    ViewData["Title"] = "Kart Bilgileri";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kart Bilgileri - İşBank Sanal POS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .navbar-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .navbar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+            .navbar-title span {
+                color: #3b82f6;
+            }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #15803d;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 20px;
+            padding: 5px 12px;
+        }
+
+        /* ── Adım Çubuğu ── */
+        .steps-bar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 32px;
+        }
+
+        .steps {
+            display: flex;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+            .step:not(:last-child)::after {
+                content: '';
+                flex: 1;
+                height: 2px;
+                background: #e2e8f0;
+                margin: 0 8px;
+            }
+
+            .step.completed:not(:last-child)::after {
+                background: #3b82f6;
+            }
+
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .step.active .step-circle {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+        }
+
+        .step.completed .step-circle {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        .step.active .step-label {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .step.completed .step-label {
+            color: #3b82f6;
+        }
+
+        /* ── İçerik ── */
+        .page-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 36px 20px;
+        }
+
+        .page-wrapper {
+            max-width: 560px;
+            width: 100%;
+        }
+
+        /* Kart önizlemesi */
+        .credit-card-preview {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 60%, #60a5fa 100%);
+            border-radius: 16px;
+            padding: 24px 28px;
+            color: white;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(30,58,138,0.25);
+            min-height: 170px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+            .credit-card-preview::before {
+                content: '';
+                position: absolute;
+                width: 220px;
+                height: 220px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.06);
+                top: -60px;
+                right: -60px;
+            }
+
+            .credit-card-preview::after {
+                content: '';
+                position: absolute;
+                width: 160px;
+                height: 160px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.04);
+                bottom: -50px;
+                left: -30px;
+            }
+
+        .card-preview-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .card-chip {
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 6px;
+        }
+
+        .card-type-badge {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .card-preview-number {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            position: relative;
+            font-family: 'Courier New', monospace;
+        }
+
+        .card-preview-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            position: relative;
+        }
+
+        .card-preview-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+            margin-bottom: 3px;
+        }
+
+        .card-preview-value {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Form kartı */
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-card-header {
+            padding: 22px 28px 18px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+            .form-card-header h2 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #1e293b;
+                margin-bottom: 4px;
+            }
+
+            .form-card-header p {
+                font-size: 13px;
+                color: #64748b;
+            }
+
+        .form-card-body {
+            padding: 22px 28px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 6px;
+                font-size: 12px;
+                font-weight: 700;
+                color: #334155;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+        .required {
+            color: #ef4444;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #1e293b;
+            background: white;
+            transition: all 0.2s;
+        }
+
+            .form-input:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            }
+
+            .form-input.input-validation-error {
+                border-color: #ef4444;
+                background: #fef2f2;
+            }
+
+        .text-danger {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .card-number-input {
+            font-family: 'Courier New', monospace;
+            font-size: 17px;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* 3D Secure toggle */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+            .toggle-group:hover {
+                border-color: #93c5fd;
+                background: #eff6ff;
+            }
+
+        .toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-icon {
+            font-size: 20px;
+        }
+
+        .toggle-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .toggle-desc {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* CSS Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #e2e8f0;
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+
+            .slider::before {
+                content: '';
+                position: absolute;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: white;
+                left: 3px;
+                bottom: 3px;
+                transition: 0.3s;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            }
+
+        .switch input:checked + .slider {
+            background: #3b82f6;
+        }
+
+            .switch input:checked + .slider::before {
+                transform: translateX(20px);
+            }
+
+        /* Güvenli ödeme notu */
+        .secure-note {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #15803d;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+            .submit-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 8px 24px rgba(59,130,246,0.35);
+            }
+
+            .submit-btn:active {
+                transform: translateY(0);
+            }
+
+        .back-link {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 13px;
+        }
+
+            .back-link a {
+                color: #64748b;
+                text-decoration: none;
+            }
+
+                .back-link a:hover {
+                    color: #3b82f6;
+                }
+
+        .card-logos {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .card-logo {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            padding: 18px;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+        }
+
+            .page-footer a {
+                color: #3b82f6;
+                text-decoration: none;
+            }
+
+        .validation-summary {
+            background: #fef2f2;
+            border: 1.5px solid #ef4444;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 18px;
+            font-size: 13px;
+        }
+
+            .validation-summary ul {
+                margin: 0;
+                padding-left: 18px;
+            }
+
+            .validation-summary li {
+                margin: 3px 0;
+            }
+
+        @@media (max-width: 1024px) {
+            .navbar {
+                padding: 0 16px;
+            }
+
+            .steps-bar {
+                padding: 0 16px;
+            }
+        }
+
+        @@media (max-width: 640px) {
+            .page-content {
+                padding: 20px 12px;
+            }
+
+            .form-card-body {
+                padding: 18px 18px;
+            }
+
+            .form-card-header {
+                padding: 18px 18px 14px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .step-label {
+                display: none;
+            }
+
+            .credit-card-preview {
+                padding: 18px 20px;
+            }
+
+            .card-preview-number {
+                font-size: 16px;
+                letter-spacing: 2px;
+            }
+        }
+
+        body {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">
+            <div class="navbar-logo">🏦</div>
+            <div class="navbar-title">İşBank <span>Sanal POS</span></div>
+        </a>
+        <div class="secure-badge">🔒 Güvenli Bağlantı</div>
+    </nav>
+
+    <!-- Adım Çubuğu -->
+    <div class="steps-bar">
+        <div class="steps">
+            <div class="step completed">
+                <div class="step-circle">✓</div>
+                <span class="step-label">Tutar</span>
+            </div>
+            <div class="step active">
+                <div class="step-circle">2</div>
+                <span class="step-label">Kart Bilgileri</span>
+            </div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <span class="step-label">Sonuç</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- İçerik -->
+    <div class="page-content">
+        <div class="page-wrapper">
+
+            <!-- Kart Önizlemesi -->
+            <div class="credit-card-preview">
+                <div class="card-preview-top">
+                    <div class="card-chip"></div>
+                    <div class="card-type-badge" id="previewCardType">KART</div>
+                </div>
+                <div class="card-preview-number" id="previewNumber">•••• &nbsp;•••• &nbsp;•••• &nbsp;••••</div>
+                <div class="card-preview-bottom">
+                    <div>
+                        <div class="card-preview-label">Kart Sahibi</div>
+                        <div class="card-preview-value" id="previewName">AD SOYAD</div>
+                    </div>
+                    <div>
+                        <div class="card-preview-label">Son Kul. Tar.</div>
+                        <div class="card-preview-value" id="previewExpiry">••/••</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h2>Kart Bilgileri</h2>
+                    <p>Kartınızın bilgilerini eksiksiz ve doğru giriniz</p>
+                </div>
+                <div class="form-card-body">
+
+                    <form asp-action="StartPayment" method="post">
+                        <input type="hidden" asp-for="PaymentId" />
+
+                        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                        <!-- Kart Sahibi -->
+                        <div class="form-group">
+                            <label asp-for="CardHolder">Kart Üzerindeki Ad Soyad <span class="required">*</span></label>
+                            <input asp-for="CardHolder"
+                                   class="form-input"
+                                   placeholder="AD SOYAD"
+                                   style="text-transform:uppercase"
+                                   autocomplete="cc-name" />
+                            <span asp-validation-for="CardHolder" class="text-danger"></span>
+                        </div>
+
+                        <!-- Kart Numarası -->
+                        <div class="form-group">
+                            <label asp-for="CardNumber">Kart Numarası <span class="required">*</span></label>
+                            <div class="input-with-icon">
+                                <input asp-for="CardNumber"
+                                       class="form-input card-number-input"
+                                       placeholder="0000 0000 0000 0000"
+                                       maxlength="19"
+                                       autocomplete="cc-number"
+                                       id="cardNumberInput" />
+                                <span class="input-icon" id="cardTypeIcon">💳</span>
+                            </div>
+                            <span asp-validation-for="CardNumber" class="text-danger"></span>
+                        </div>
+
+                        <!-- Ay / Yıl / CVV -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label asp-for="ExpireMonth">Son Kul. Ay <span class="required">*</span></label>
+                                <input asp-for="ExpireMonth"
+                                       class="form-input"
+                                       placeholder="MM"
+                                       maxlength="2"
+                                       id="expireMonth"
+                                       autocomplete="cc-exp-month" />
+                                <span asp-validation-for="ExpireMonth" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="ExpireYear">Son Kul. Yıl <span class="required">*</span></label>
+                                <input asp-for="ExpireYear"
+                                       class="form-input"
+                                       placeholder="YY"
+                                       maxlength="2"
+                                       id="expireYear"
+                                       autocomplete="cc-exp-year" />
+                                <span asp-validation-for="ExpireYear" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="CVV">CVV <span class="required">*</span></label>
+                                <div class="input-with-icon">
+                                    <input asp-for="CVV"
+                                           class="form-input"
+                                           placeholder="•••"
+                                           maxlength="4"
+                                           type="password"
+                                           autocomplete="cc-csc" />
+                                    <span class="input-icon">🔒</span>
+                                </div>
+                                <span asp-validation-for="CVV" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- 3D Secure Toggle -->
+                        <label class="toggle-group" for="Use3DCheckbox">
+                            <div class="toggle-left">
+                                <span class="toggle-icon">🛡️</span>
+                                <div>
+                                    <div class="toggle-title">3D Secure</div>
+                                    <div class="toggle-desc">Ek doğrulama katmanı ile daha güvenli ödeme</div>
+                                </div>
+                            </div>
+                            <label class="switch">
+                                <input asp-for="Use3D" type="checkbox" id="Use3DCheckbox" />
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+
+                        <!-- Güvenli Ödeme Notu -->
+                        <div class="secure-note">
+                            🔒 Kart bilgileriniz 256-bit SSL şifreleme ile korunmaktadır.
+                        </div>
+
+                        <button type="submit" class="submit-btn">
+                            🔐 &nbsp; Ödemeyi Tamamla
+                        </button>
+                    </form>
+
+                    <div class="card-logos">
+                        <span class="card-logo">VISA</span>
+                        <span class="card-logo">MASTERCARD</span>
+                        <span class="card-logo">TROY</span>
+                        <span class="card-logo">AMEX</span>
+                    </div>
+
+                    <div class="back-link">
+                        <a href="javascript:history.back()">← Geri Dön</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+        © 2025 İşBank Sanal POS &nbsp;·&nbsp;
+        <a href="#">Gizlilik Politikası</a> &nbsp;·&nbsp;
+        <a href="#">Güvenlik</a>
+        &nbsp;|&nbsp; 🔒 256-bit SSL &nbsp; 🛡️ 3D Secure &nbsp; ✅ PCI DSS
+    </footer>
+
+    <script>
+        // Kart numarası formatla + önizleme
+        document.getElementById('cardNumberInput').addEventListener('input', function () {
+            let val = this.value.replace(/\D/g, '').substring(0, 16);
+            this.value = val.replace(/(.{4})/g, '$1 ').trim();
+
+            let padded = val.padEnd(16, '•');
+            document.getElementById('previewNumber').innerHTML =
+                padded.substring(0,4) + ' &nbsp;' +
+                padded.substring(4,8) + ' &nbsp;' +
+                padded.substring(8,12) + ' &nbsp;' +
+                padded.substring(12,16);
+
+            const icon  = document.getElementById('cardTypeIcon');
+            const badge = document.getElementById('previewCardType');
+            if      (/^4/.test(val)) { icon.textContent = '💙'; badge.textContent = 'VISA'; }
+            else if (/^5/.test(val)) { icon.textContent = '🔴'; badge.textContent = 'MASTERCARD'; }
+            else if (/^9/.test(val)) { icon.textContent = '🟤'; badge.textContent = 'TROY'; }
+            else                     { icon.textContent = '💳'; badge.textContent = 'KART'; }
+        });
+
+        // Ad soyad önizleme
+        document.querySelector('input[name="CardHolder"]').addEventListener('input', function () {
+            document.getElementById('previewName').textContent =
+                this.value.toUpperCase() || 'AD SOYAD';
+        });
+
+        // Ay/Yıl önizleme
+        function updateExpiry() {
+            const m = document.getElementById('expireMonth').value.padStart(2, '0') || '••';
+            const y = document.getElementById('expireYear').value || '••';
+            document.getElementById('previewExpiry').textContent =
+                (m.length ? m : '••') + '/' + (y.length ? y : '••');
+        }
+
+        document.getElementById('expireMonth').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+            updateExpiry();
+        });
+
+        document.getElementById('expireYear').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+            updateExpiry();
+        });
+    </script>
+</body>
+</html>

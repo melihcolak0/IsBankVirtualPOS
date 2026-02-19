@@ -1,0 +1,273 @@
+﻿
+@{
+    Layout = "_PaymentLayout";
+    ViewData["Title"] = "Ödeme";
+    ViewData["Step"] = "1";
+}
+
+<style>
+    .checkout-wrapper {
+        max-width: 520px;
+        width: 100%;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+    .required {
+        color: #ef4444;
+        margin-left: 2px;
+    }
+
+    .amount-wrapper {
+        position: relative;
+    }
+
+        .amount-wrapper .currency-symbol {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            font-weight: 700;
+            color: #334155;
+            pointer-events: none;
+        }
+
+    .amount-input {
+        width: 100%;
+        padding: 16px 16px 16px 44px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        background: white;
+        transition: all 0.2s;
+    }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+        }
+
+        .amount-input::placeholder {
+            color: #cbd5e1;
+            font-weight: 400;
+        }
+
+    .quick-amounts {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    .quick-btn {
+        padding: 7px 16px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 20px;
+        background: white;
+        font-size: 13px;
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .quick-btn:hover, .quick-btn.active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: #eff6ff;
+        }
+
+    .divider {
+        height: 1px;
+        background: #f1f5f9;
+        margin: 8px 0 20px;
+    }
+
+    .summary-box {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #64748b;
+        padding: 6px 0;
+    }
+
+        .summary-row.total {
+            border-top: 1px solid #e2e8f0;
+            margin-top: 6px;
+            padding-top: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+            .summary-row.total span:last-child {
+                color: #2563eb;
+                font-size: 18px;
+            }
+
+    .info-note {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #1d4ed8;
+        margin-bottom: 20px;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        letter-spacing: 0.3px;
+    }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(59,130,246,0.35);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+    .card-logos {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .card-logo {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 5px 10px;
+        font-size: 10px;
+        font-weight: 800;
+        color: #64748b;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="checkout-wrapper">
+    <div class="card">
+        <div class="card-header">
+            <h2>Ödeme Tutarı</h2>
+            <p>Ödemek istediğiniz tutarı giriniz</p>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="form-group">
+                    <label>Tutar <span class="required">*</span></label>
+                    <div class="amount-wrapper">
+                        <span class="currency-symbol">₺</span>
+                        <input type="number" step="0.01" min="0.01"
+                               name="amount" id="amountInput"
+                               class="amount-input"
+                               placeholder="0,00" required />
+                    </div>
+                    <div class="quick-amounts">
+                        <button type="button" class="quick-btn" onclick="setAmount(50, this)">₺50</button>
+                        <button type="button" class="quick-btn" onclick="setAmount(100, this)">₺100</button>
+                        <button type="button" class="quick-btn" onclick="setAmount(250, this)">₺250</button>
+                        <button type="button" class="quick-btn" onclick="setAmount(500, this)">₺500</button>
+                        <button type="button" class="quick-btn" onclick="setAmount(1000, this)">₺1.000</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="summary-box">
+                    <div class="summary-row">
+                        <span>İşlem Tutarı</span>
+                        <span id="summaryAmount">₺0,00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Komisyon</span>
+                        <span>Ücretsiz</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Ödenecek Tutar</span>
+                        <span id="summaryTotal">₺0,00</span>
+                    </div>
+                </div>
+
+                <div class="info-note">
+                    ℹ️ Ödeme bilgileriniz bir sonraki adımda alınacaktır.
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    Devam Et &nbsp; →
+                </button>
+
+                <div class="card-logos">
+                    <span class="card-logo">VISA</span>
+                    <span class="card-logo">MASTERCARD</span>
+                    <span class="card-logo">TROY</span>
+                    <span class="card-logo">AMEX</span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', updateSummary);
+    document.getElementById('amountInput').addEventListener('input', function() {
+        document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+        updateSummary();
+    });
+
+    function setAmount(val, btn) {
+        document.getElementById('amountInput').value = val.toFixed(2);
+        document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const raw = parseFloat(document.getElementById('amountInput').value) || 0;
+        const fmt = raw.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('summaryAmount').textContent = '₺' + fmt;
+        document.getElementById('summaryTotal').textContent  = '₺' + fmt;
+    }
+</script>

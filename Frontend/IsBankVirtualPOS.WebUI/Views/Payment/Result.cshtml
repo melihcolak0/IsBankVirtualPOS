@@ -1,0 +1,667 @@
+﻿@model IsBankVirtualPOS.WebUI.DTOs.PaymentDTOs.PaymentSummaryDTO
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Ödeme Sonucu";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ödeme Sonucu - İşBank Sanal POS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .navbar-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .navbar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+            .navbar-title span {
+                color: #3b82f6;
+            }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #15803d;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 20px;
+            padding: 5px 12px;
+        }
+
+        .steps-bar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 32px;
+        }
+
+        .steps {
+            display: flex;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+            .step:not(:last-child)::after {
+                content: '';
+                flex: 1;
+                height: 2px;
+                background: #e2e8f0;
+                margin: 0 8px;
+            }
+
+            .step.completed:not(:last-child)::after {
+                background: #3b82f6;
+            }
+
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .step.active .step-circle {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+        }
+
+        .step.completed .step-circle {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        .step.active .step-label {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .step.completed .step-label {
+            color: #3b82f6;
+        }
+
+        .page-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .result-wrapper {
+            max-width: 480px;
+            width: 100%;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        /* ── Başlık ── */
+        .result-header {
+            padding: 36px 28px 28px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+            /* İade başlığı için özel arka plan */
+            .result-header.refunded-header {
+                background: linear-gradient(180deg, #fffbeb 0%, white 100%);
+            }
+
+        .result-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 16px;
+            animation: popIn 0.5s ease-out forwards;
+        }
+
+            .result-icon.success {
+                background: #dcfce7;
+                border: 3px solid #86efac;
+            }
+
+            .result-icon.failed {
+                background: #fee2e2;
+                border: 3px solid #fca5a5;
+            }
+
+            .result-icon.pending {
+                background: #fef9c3;
+                border: 3px solid #fde047;
+            }
+
+            .result-icon.refunded {
+                background: #fef3c7;
+                border: 3px solid #fde68a;
+                box-shadow: 0 0 0 6px rgba(251,191,36,0.12);
+                font-size: 34px;
+            }
+
+        .result-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+
+        .result-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        /* ── Tutar ── */
+        .result-amount {
+            padding: 20px 28px;
+            text-align: center;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+            /* İade tutar kutusu rengi */
+            .result-amount.refunded-amount {
+                background: #fffbeb;
+                border-bottom-color: #fde68a;
+            }
+
+            .result-amount .amount-label {
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: #94a3b8;
+                font-weight: 600;
+                margin-bottom: 4px;
+            }
+
+            .result-amount.refunded-amount .amount-label {
+                color: #92400e;
+                opacity: 0.7;
+            }
+
+            .result-amount .amount-value {
+                font-size: 38px;
+                font-weight: 800;
+                color: #1e293b;
+            }
+
+            .result-amount.refunded-amount .amount-value {
+                color: #92400e;
+            }
+
+        .refund-arrow {
+            display: block;
+            font-size: 13px;
+            color: #b45309;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* ── Detaylar ── */
+        .result-details {
+            padding: 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 28px;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+            .detail-row:last-child {
+                border-bottom: none;
+            }
+
+        .detail-key {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .detail-val {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+            .status-badge.success {
+                background: #dcfce7;
+                color: #16a34a;
+            }
+
+            .status-badge.failed {
+                background: #fee2e2;
+                color: #dc2626;
+            }
+
+            .status-badge.pending {
+                background: #fef9c3;
+                color: #ca8a04;
+            }
+
+            .status-badge.refunded {
+                background: #fef3c7;
+                color: #92400e;
+                border: 1px solid #fde68a;
+            }
+
+        /* İade bilgi kutusu */
+        .refund-info-box {
+            margin: 0 28px;
+            padding: 12px 14px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #1d4ed8;
+            line-height: 1.6;
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        /* ── Aksiyonlar ── */
+        .result-actions {
+            padding: 20px 28px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            transition: all 0.2s;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 8px 24px rgba(59,130,246,0.35);
+            }
+
+        .btn-warning {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            transition: all 0.2s;
+        }
+
+            .btn-warning:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 8px 24px rgba(245,158,11,0.35);
+            }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 13px;
+            background: white;
+            color: #475569;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            transition: all 0.2s;
+        }
+
+            .btn-secondary:hover {
+                border-color: #94a3b8;
+                color: #1e293b;
+            }
+
+        .page-footer {
+            text-align: center;
+            padding: 18px;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+        }
+
+            .page-footer a {
+                color: #3b82f6;
+                text-decoration: none;
+            }
+
+        @@keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        body {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 640px) {
+            .navbar, .steps-bar {
+                padding: 0 16px;
+            }
+
+            .step-label {
+                display: none;
+            }
+
+            .page-content {
+                padding: 20px 12px;
+            }
+
+            .detail-row {
+                padding: 12px 18px;
+            }
+
+            .result-header {
+                padding: 28px 18px 22px;
+            }
+
+            .result-actions {
+                padding: 16px 18px 20px;
+            }
+
+            .refund-info-box {
+                margin: 0 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">
+            <div class="navbar-logo">🏦</div>
+            <div class="navbar-title">İşBank <span>Sanal POS</span></div>
+        </a>
+        <div class="secure-badge">🔒 Güvenli Bağlantı</div>
+    </nav>
+
+    <div class="steps-bar">
+        <div class="steps">
+            <div class="step completed">
+                <div class="step-circle">✓</div>
+                <span class="step-label">Tutar</span>
+            </div>
+            <div class="step completed">
+                <div class="step-circle">✓</div>
+                <span class="step-label">Kart Bilgileri</span>
+            </div>
+            <div class="step active">
+                <div class="step-circle">3</div>
+                <span class="step-label">Sonuç</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-content">
+        <div class="result-wrapper">
+            <div class="result-card">
+
+                <!-- Başlık -->
+                <div class="result-header @(Model.Status == "Refunded" ? "refunded-header" : "")">
+                    @if (Model.Status == "Success")
+                    {
+                        <div class="result-icon success">✅</div>
+                        <div class="result-title">Ödeme Başarılı!</div>
+                        <div class="result-subtitle">İşleminiz başarıyla tamamlandı.</div>
+                    }
+                    else if (Model.Status == "Failed")
+                    {
+                        <div class="result-icon failed">❌</div>
+                        <div class="result-title">Ödeme Başarısız</div>
+                        <div class="result-subtitle">İşlem gerçekleştirilemedi. Lütfen tekrar deneyiniz.</div>
+                    }
+                    else if (Model.Status == "Refunded")
+                    {
+                        <div class="result-icon refunded">💸</div>
+                        <div class="result-title">İade Talebi Alındı</div>
+                        <div class="result-subtitle">
+                            İade işleminiz başarıyla başlatıldı.<br />
+                            Tutar 1–3 iş günü içinde kartınıza yansıyacaktır.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="result-icon pending">⏳</div>
+                        <div class="result-title">Ödeme Beklemede</div>
+                        <div class="result-subtitle">İşleminiz işleme alındı, sonuç bekleniyor.</div>
+                    }
+                </div>
+
+                <!-- Tutar -->
+                <div class="result-amount @(Model.Status == "Refunded" ? "refunded-amount" : "")">
+                    <div class="amount-label">
+                        @(Model.Status == "Refunded" ? "İade Edilecek Tutar" : "İşlem Tutarı")
+                    </div>
+                    <div class="amount-value">₺@Model.Amount.ToString("N2")</div>
+                    @if (Model.Status == "Refunded")
+                    {
+                        <span class="refund-arrow">↩ Kartınıza iade edilecek</span>
+                    }
+                </div>
+
+                <!-- Detaylar -->
+                <div class="result-details">
+                    <div class="detail-row">
+                        <span class="detail-key">Ödeme ID</span>
+                        <span class="detail-val">@Model.PaymentId</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-key">Tarih / Saat</span>
+                        <span class="detail-val">@DateTime.Now.ToString("dd.MM.yyyy HH:mm")</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-key">Deneme Sayısı</span>
+                        <span class="detail-val">@Model.AttemptCount</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-key">Durum</span>
+                        <span>
+                            @if (Model.Status == "Success")
+                            {
+                                <span class="status-badge success">✓ Onaylandı</span>
+                            }
+                            else if (Model.Status == "Failed")
+                            {
+                                <span class="status-badge failed">✗ Reddedildi</span>
+                            }
+                            else if (Model.Status == "Refunded")
+                            {
+                                <span class="status-badge refunded">💸 İade Edildi</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge pending">⏳ Beklemede</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+
+                @if (Model.Status == "Refunded")
+                {
+                    <div class="refund-info-box" style="margin-bottom: 0; border-bottom: 1px solid #f1f5f9; border-radius: 0; border-left: none; border-right: none; padding: 14px 28px;">
+                        ℹ️&nbsp;
+                        <span>
+                            İade tutarı bankanıza bağlı olarak <strong>1–3 iş günü</strong> içinde
+                            hesabınıza aktarılır.
+                        </span>
+                    </div>
+                }
+
+                <div class="result-actions">
+                    @if (Model.CanRefund)
+                    {
+                        <form method="post" asp-action="Refund">
+                            <input type="hidden" name="paymentId" value="@Model.PaymentId" />
+                            <button type="submit" class="btn-warning">
+                                💸 &nbsp; İade Yap
+                            </button>
+                        </form>
+                    }
+
+                    @if (Model.Status == "Failed")
+                    {
+                        <a asp-action="Card" asp-controller="Payment" class="btn-primary">
+                            🔄 &nbsp; Tekrar Dene
+                        </a>
+                    }
+
+                    <a href="/payment/checkout" class="btn-secondary">
+                        ＋ &nbsp; Yeni Ödeme
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer class="page-footer">
+        © 2025 İşBank Sanal POS &nbsp;·&nbsp;
+        <a href="#">Gizlilik Politikası</a> &nbsp;·&nbsp;
+        <a href="#">Güvenlik</a>
+        &nbsp;|&nbsp; 🔒 256-bit SSL &nbsp; 🛡️ 3D Secure &nbsp; ✅ PCI DSS
+    </footer>
+
+</body>
+</html>

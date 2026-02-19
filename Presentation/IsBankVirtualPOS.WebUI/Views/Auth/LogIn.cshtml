@@ -1,0 +1,408 @@
+﻿@model LogInDTO
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap - İşBank Sanal POS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .left-panel {
+            flex: 1;
+            background: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            order: 1;
+        }
+
+        .right-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            color: white;
+            order: 2;
+        }
+
+            .right-panel h1 {
+                font-size: 42px;
+                font-weight: 700;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .right-panel p {
+                font-size: 18px;
+                text-align: center;
+                opacity: 0.9;
+                max-width: 400px;
+                line-height: 1.6;
+            }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 30px;
+            font-weight: 800;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 420px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .login-header {
+            margin-bottom: 30px;
+        }
+
+            .login-header h2 {
+                font-size: 28px;
+                font-weight: 700;
+                color: #1e293b;
+                margin-bottom: 8px;
+            }
+
+            .login-header p {
+                font-size: 14px;
+                color: #64748b;
+            }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 6px;
+                font-size: 14px;
+                font-weight: 500;
+                color: #334155;
+            }
+
+                .form-group label .required {
+                    color: #ef4444;
+                    margin-left: 2px;
+                }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+            .form-input:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            .form-input.input-validation-error {
+                border-color: #ef4444;
+                background: #fef2f2;
+            }
+
+        .text-danger {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: #475569;
+        }
+
+            .remember-me input[type="checkbox"] {
+                margin-right: 8px;
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                accent-color: #3b82f6;
+            }
+
+        .forgot-password {
+            font-size: 13px;
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+            .forgot-password:hover {
+                text-decoration: underline;
+            }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .submit-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+            }
+
+            .submit-btn:active {
+                transform: translateY(0);
+            }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+            .auth-switch a {
+                color: #3b82f6;
+                text-decoration: none;
+                font-weight: 600;
+                margin-left: 4px;
+            }
+
+                .auth-switch a:hover {
+                    text-decoration: underline;
+                }
+
+        .validation-summary {
+            background: #fef2f2;
+            border: 1.5px solid #ef4444;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+            .validation-summary ul {
+                margin: 0;
+                padding-left: 18px;
+            }
+
+            .validation-summary li {
+                margin: 3px 0;
+            }
+
+        @@media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+            }
+
+            .left-panel,
+            .right-panel {
+                order: unset;
+            }
+
+            .right-panel {
+                padding: 40px 20px;
+                min-height: 200px;
+            }
+
+                .right-panel h1 {
+                    font-size: 32px;
+                }
+
+                .right-panel p {
+                    font-size: 16px;
+                }
+
+            .logo {
+                font-size: 36px;
+                margin-bottom: 20px;
+            }
+
+            .left-panel {
+                padding: 30px 20px;
+            }
+
+            .login-container {
+                padding: 30px 24px;
+            }
+        }
+
+        @@media (max-width: 640px) {
+            .login-container {
+                padding: 24px 20px;
+            }
+
+            .login-header h2 {
+                font-size: 24px;
+            }
+
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+
+        body {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .left-panel,
+        .right-panel {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from
+
+        {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+
+        }
+
+        @@keyframes slideIn {
+            from
+
+        {
+            transform: translateX(30px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="login-container">
+            <div class="login-header">
+                <h2>Hoş Geldiniz</h2>
+                <p>Hesabınıza giriş yapın</p>
+            </div>
+
+            <form asp-action="LogIn" asp-controller="Auth" method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                <div class="form-group">
+                    <label asp-for="Email">
+                        E-posta Adresi <span class="required">*</span>
+                    </label>
+                    <input asp-for="Email" type="email" class="form-input" placeholder="ornek@email.com" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password">
+                        Şifre <span class="required">*</span>
+                    </label>
+                    <input asp-for="Password" type="password" class="form-input" placeholder="••••••••" autocomplete="current-password" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input asp-for="RememberMe" type="checkbox" />
+                        <span>Beni hatırla</span>
+                    </label>
+                    <a href="#" class="forgot-password">Şifremi unuttum</a>
+                </div>
+
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="submit-btn">Giriş Yap</button>
+
+                <div class="auth-switch">
+                    Hesabınız yok mu?
+                    <a asp-action="Register" asp-controller="Auth">Kayıt Olun</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="logo">🏦</div>
+        <h1>İşBank Sanal POS</h1>
+        <p>Güvenli ve hızlı ödeme çözümleriyle işletmenizi dijitale taşıyın</p>
+    </div>
+
+    <script>
+        // Sayfa yüklenirken fade-in animasyonu
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.style.opacity = '0';
+            setTimeout(function() {
+                document.body.style.transition = 'opacity 0.4s ease-in-out';
+                document.body.style.opacity = '1';
+            }, 10);
+        });
+
+        // Link tıklamalarında fade-out animasyonu
+        document.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+
+                // Anchor link veya boş link değilse
+                if (href && href !== '#' && !href.startsWith('javascript:')) {
+                    e.preventDefault();
+
+                    document.body.style.transition = 'opacity 0.3s ease-in-out';
+                    document.body.style.opacity = '0';
+
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 300);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

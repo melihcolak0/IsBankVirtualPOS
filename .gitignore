@@ -1,0 +1,22 @@
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Config
+appsettings.json
+appsettings.Development.json
+
+# Secrets
+*.pfx
+*.key
+
+# Node (varsa)
+node_modules/
+
+# Logs
+*.log

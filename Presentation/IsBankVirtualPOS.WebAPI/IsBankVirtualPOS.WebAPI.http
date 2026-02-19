@@ -1,0 +1,6 @@
+@IsBankVirtualPOS.WebAPI_HostAddress = http://localhost:5025
+
+GET {{IsBankVirtualPOS.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

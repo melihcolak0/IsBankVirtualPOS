@@ -1,0 +1,426 @@
+﻿@model RegisterDTO
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol - İşBank Sanal POS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            color: white;
+        }
+
+            .left-panel h1 {
+                font-size: 42px;
+                font-weight: 700;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .left-panel p {
+                font-size: 18px;
+                text-align: center;
+                opacity: 0.9;
+                max-width: 400px;
+                line-height: 1.6;
+            }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 30px;
+            font-weight: 800;
+        }
+
+        .right-panel {
+            flex: 1;
+            background: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .register-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 480px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .register-header {
+            margin-bottom: 30px;
+        }
+
+            .register-header h2 {
+                font-size: 28px;
+                font-weight: 700;
+                color: #1e293b;
+                margin-bottom: 8px;
+            }
+
+            .register-header p {
+                font-size: 14px;
+                color: #64748b;
+            }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 6px;
+                font-size: 14px;
+                font-weight: 500;
+                color: #334155;
+            }
+
+                .form-group label .required {
+                    color: #ef4444;
+                    margin-left: 2px;
+                }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+            .form-input:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            .form-input.input-validation-error {
+                border-color: #ef4444;
+                background: #fef2f2;
+            }
+
+        .text-danger {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .checkbox-group {
+            margin: 20px 0;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: #475569;
+        }
+
+            .checkbox-label input[type="checkbox"] {
+                margin-right: 8px;
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                accent-color: #3b82f6;
+            }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+            .submit-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+            }
+
+            .submit-btn:active {
+                transform: translateY(0);
+            }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+            .auth-switch a {
+                color: #3b82f6;
+                text-decoration: none;
+                font-weight: 600;
+                margin-left: 4px;
+            }
+
+                .auth-switch a:hover {
+                    text-decoration: underline;
+                }
+
+        .validation-summary {
+            background: #fef2f2;
+            border: 1.5px solid #ef4444;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+            .validation-summary ul {
+                margin: 0;
+                padding-left: 18px;
+            }
+
+            .validation-summary li {
+                margin: 3px 0;
+            }
+
+        @@media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                padding: 40px 20px;
+                min-height: 200px;
+            }
+
+                .left-panel h1 {
+                    font-size: 32px;
+                }
+
+                .left-panel p {
+                    font-size: 16px;
+                }
+
+            .logo {
+                font-size: 36px;
+                margin-bottom: 20px;
+            }
+
+            .right-panel {
+                padding: 30px 20px;
+            }
+
+            .register-container {
+                padding: 30px 24px;
+            }
+        }
+
+        @@media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .register-container {
+                padding: 24px 20px;
+            }
+
+            .register-header h2 {
+                font-size: 24px;
+            }
+        }
+
+        body {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .left-panel,
+        .right-panel {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @@keyframes slideIn {
+            from {
+                transform: translateX(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="logo">🏦</div>
+        <h1>İşBank Sanal POS</h1>
+        <p>Güvenli ve hızlı ödeme çözümleriyle işletmenizi dijitale taşıyın</p>
+    </div>
+
+    <div class="right-panel">
+        <div class="register-container">
+            <div class="register-header">
+                <h2>Hesap Oluştur</h2>
+                <p>Hemen ücretsiz hesap açın ve başlayın</p>
+            </div>
+
+            <form asp-action="Register" asp-controller="Auth" method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="Name">
+                            Ad <span class="required">*</span>
+                        </label>
+                        <input asp-for="Name" class="form-input" placeholder="Adınız" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Surname">
+                            Soyad <span class="required">*</span>
+                        </label>
+                        <input asp-for="Surname" class="form-input" placeholder="Soyadınız" />
+                        <span asp-validation-for="Surname" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Username">
+                        Kullanıcı Adı <span class="required">*</span>
+                    </label>
+                    <input asp-for="Username" class="form-input" placeholder="Kullanıcı adınız" />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email">
+                        E-posta Adresi <span class="required">*</span>
+                    </label>
+                    <input asp-for="Email" type="email" class="form-input" placeholder="ornek@email.com" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="City">
+                        Şehir <span class="required">*</span>
+                    </label>
+                    <input asp-for="City" class="form-input" placeholder="İstanbul" />
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input asp-for="IsMerchant" type="checkbox" />
+                        <span>Üye işyeri olarak kayıt olmak istiyorum</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password">
+                        Şifre <span class="required">*</span>
+                    </label>
+                    <input asp-for="Password" type="password" class="form-input" placeholder="••••••••" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword">
+                        Şifre Tekrar <span class="required">*</span>
+                    </label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-input" placeholder="••••••••" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="submit-btn">Kayıt Ol</button>
+
+                <div class="auth-switch">
+                    Zaten hesabınız var mı?
+                    <a asp-action="LogIn" asp-controller="Auth">Giriş Yapın</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Sayfa yüklenirken fade-in animasyonu
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.style.opacity = '0';
+            setTimeout(function() {
+                document.body.style.transition = 'opacity 0.4s ease-in-out';
+                document.body.style.opacity = '1';
+            }, 10);
+        });
+
+        // Link tıklamalarında fade-out animasyonu
+        document.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+
+                // Anchor link veya boş link değilse
+                if (href && href !== '#' && !href.startsWith('javascript:')) {
+                    e.preventDefault();
+
+                    document.body.style.transition = 'opacity 0.3s ease-in-out';
+                    document.body.style.opacity = '0';
+
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 300);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
